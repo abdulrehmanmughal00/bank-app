@@ -9,7 +9,7 @@ const createToken = (userId: string) => {
 };
 
 const setTokenCookie = (res: Response, token: string) => {
-  res.cookie("token", token, {
+    res.cookie("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -45,8 +45,6 @@ async function registerUser(req: Request, res: Response) {
     const token = createToken(createdUser._id.toString());
     setTokenCookie(res, token);
 
-    await sendWelcomeEmail(createdUser.email, createdUser.name);
-
     res.status(201).json({
       message: "user created Sucessfully",
       createdUser: {
@@ -54,6 +52,7 @@ async function registerUser(req: Request, res: Response) {
         email,
       },
     });
+    await sendWelcomeEmail(createdUser.email, createdUser.name);
   } catch (error) {
     console.error("user register failed !!! ", error);
     res.status(400).json({ message: "internal server error " });
@@ -103,4 +102,24 @@ async function loginUser(req: Request, res: Response) {
   }
 }
 
-export default { registerUser, loginUser };
+async function getUser(req: Request, res: Response) {
+  try {
+    const user = await userModel.findById(req.userId).select("-password");
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Unauthorized. Please login.",
+      });
+    }
+
+    res.status(200).json({ message: "user fetched sucessfully", user });
+  } catch (error) {
+    console.log("get user failed !!! ", error);
+
+    return res.status(500).json({
+      message: "internal server error ",
+    });
+  }
+}
+
+export default { registerUser, loginUser, getUser };
