@@ -9,7 +9,7 @@ const createToken = (userId: string) => {
 };
 
 const setTokenCookie = (res: Response, token: string) => {
-    res.cookie("token", token, {
+  res.cookie("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -54,7 +54,7 @@ async function registerUser(req: Request, res: Response) {
     });
     await sendWelcomeEmail(createdUser.email, createdUser.name);
   } catch (error) {
-    console.error("user register failed !!! ", error);
+    console.error("user register error !!! ", error);
     res.status(400).json({ message: "internal server error " });
   }
 }
