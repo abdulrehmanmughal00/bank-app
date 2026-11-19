@@ -5,6 +5,7 @@ interface IUser {
   email: string;
   name: string;
   password: string;
+  systemUser: boolean;
 }
 
 interface IUserMethods {
@@ -37,6 +38,12 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
       type: String,
       required: [true, "Password is required"],
       minlength: [8, "Password must be at least 8 characters"],
+      select: false,
+    },
+    systemUser: {
+      type: Boolean,
+      default: false,
+      immutable: true,
       select: false,
     },
   },

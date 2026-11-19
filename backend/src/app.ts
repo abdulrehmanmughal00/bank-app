@@ -4,6 +4,7 @@ import authRouter from "./routes/auth.route.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import accountRoute from "./routes/account.routes.js";
+import transactionRoute from "./routes/transaction.route.js";
 dotenv.config();
 
 const app = express();
@@ -20,5 +21,6 @@ app.use(
 app.use("/api/auth", authRouter);
 
 app.use("/api/account", accountRoute);
+app.use("/api/transaction", transactionRoute);
 
 export default app;
