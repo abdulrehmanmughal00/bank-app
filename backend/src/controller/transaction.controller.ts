@@ -127,7 +127,6 @@ async function createTransaction(req: Request, res: Response) {
 
     transaction.status = "Completed";
     await transaction.save({ session });
-
     await session.commitTransaction();
     session.endSession();
 
@@ -151,11 +150,82 @@ async function createTransaction(req: Request, res: Response) {
   //! controller end
 }
 
+async function createInitialFundsTransaction(req: Request, res: Response) {
+  const { toAccount, amount, idempotencyKey } = req.body;
 
+  if (!toAccount || !amount || !idempotencyKey) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
 
+  const toUserAccount = await accountModel.findOne({ _id: toAccount });
 
+  if (!toUserAccount) {
+    return res.status(404).json({
+      message: "Receiver account not found.",
+    });
+  }
+  if (!req.user) {
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
+  }
+  const fromUserAccount = await accountModel.findOne({
+    user: req.user?._id,
+  });
 
+  if (!fromUserAccount) {
+    return res.status(404).json({
+      message: "Sender account not found.",
+    });
+  }
 
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
+  const transaction = new transactionModel({
+    fromAccount: fromUserAccount._id,
+    toAccount,
+    amount,
+    idempotencyKey,
+    status: "Pending",
+  });
 
-export default { createTransaction };
+  await transaction.save({ session });
+
+  const debitLedger = await ledgerModel.create(
+    [
+      {
+        account: fromUserAccount._id,
+        type: "Debit",
+        amount,
+        transaction: transaction._id,
+      },
+    ],
+    { session },
+  );
+
+  const creditLedger = await ledgerModel.create(
+    [
+      {
+        account: toUserAccount._id,
+        type: "Credit",
+        amount,
+        transaction: transaction._id,
+      },
+    ],
+    { session },
+  );
+
+  transaction.status = "Completed";
+  await transaction.save({ session });
+
+  await session.commitTransaction();
+  session.endSession();
+
+  return res.status(201).json({
+    message: "Initial funds transaction completed successfully",
+    transaction,
+  });
+}
+
+export default { createTransaction, createInitialFundsTransaction };
