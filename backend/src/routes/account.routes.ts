@@ -16,4 +16,11 @@ router.get(
   accountController.getAccountController,
 );
 
+
+router.get(
+  "/get-account-balance/:accountId",
+  authMiddleware.authProtectedMiddleware,
+  accountController.getAccountBalance,
+);
+
 export default router;

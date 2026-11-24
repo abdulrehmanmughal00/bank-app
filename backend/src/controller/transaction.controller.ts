@@ -179,6 +179,15 @@ async function createInitialFundsTransaction(req: Request, res: Response) {
     });
   }
 
+  if (
+    fromUserAccount &&
+    fromUserAccount._id.toString() === toUserAccount._id.toString()
+  ) {
+    return res.status(400).json({
+      message: "You cannot send money to your own account",
+    });
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
 

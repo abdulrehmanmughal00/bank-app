@@ -64,4 +64,28 @@ async function getAccountController(req: Request, res: Response) {
   });
 }
 
-export default { createAccount , getAccountController };
+async function getAccountBalance(req: Request, res: Response) {
+  const { accountId } = req.params;
+  const user = req.userId;
+  if (!user) {
+    return res.status(401).json({
+      message: "Unauthorized. Please login.",
+    });
+  }
+  const account = await accountModel.findOne({
+    user: user,
+    _id: accountId,
+  });
+
+  if (!account) {
+    return res.status(404).json({ message: "account not found " });
+  }
+
+  const balance = await account.getBalance();
+
+  res
+    .status(200)
+    .json({ message: "balance fetched sucessfully", balance: balance });
+}
+
+export default { createAccount, getAccountController , getAccountBalance };
