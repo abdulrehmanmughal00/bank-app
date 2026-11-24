@@ -10,4 +10,10 @@ router.post(
   accountController.createAccount,
 );
 
+router.get(
+  "/get-all-account",
+  authMiddleware.authProtectedMiddleware,
+  accountController.getAccountController,
+);
+
 export default router;

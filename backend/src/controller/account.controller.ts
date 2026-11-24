@@ -50,4 +50,18 @@ async function createAccount(req: Request, res: Response) {
   }
 }
 
-export default { createAccount };
+async function getAccountController(req: Request, res: Response) {
+  if (!req.userId) {
+    return res.status(401).json({
+      message: "Unauthorized. Please login.",
+    });
+  }
+  const getAccounts = await accountModel.find({ user: req.userId });
+
+  res.status(200).json({
+    message: "accounts fetched sucessfully",
+    accounts: getAccounts,
+  });
+}
+
+export default { createAccount , getAccountController };
